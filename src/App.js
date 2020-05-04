@@ -64,99 +64,99 @@ export const MyD3Component = () => {
                 u: 'admin',
                 p: 'admin',
                 db: 'emsdb',
-                q: "SELECT median(\"meter0/ActivePower\") FROM data WHERE time >= now() - 2m GROUP BY time(10s)",
+                q: "SELECT median(\"meter0/ActivePower\") FROM data WHERE time >= now() - 10m GROUP BY time(30s)",
                 epoch: 'ms',
               }
             }).then( function(response){
               // console.log(response);
               // console.log("statement_id: ",response.data.results[0].statement_id)
               // console.log(response.data.results[0].series[0].values)
-              // let myHistory = response.data.results[0].series[0].values;
-              // // const parseUTC = d3.utcParse('%Y-%m-%d');
-              // // Date parser
-              // var parseTimeDate = d3.timeFormat("%Y-%m-%d %H:%M:%S");
+              let myHistory = response.data.results[0].series[0].values;
+             
+              // Date parser
+              var parseTimeDate = d3.timeFormat("%Y-%m-%d %H:%M:%S");
               
-              // const history5 = myHistory.map((d) => {
+              const history5 = myHistory.map((d) => {
 
-              //   let myDate = new Date(d[0]);
+                let myDate = new Date(d[0]);
 
-              //   return {
-              //     date: parseTimeDate(myDate),
-              //     volume: d[1],
-              //   };
-              // }); 
-              // console.log("history5 : ", history5)
-              // let forecast5 = history5.map( d => {
-              //   let myDate = (new Date(d.date ).valueOf() + 60000);  // 1분 플러스
+                return {
+                  date: new Date(parseTimeDate(myDate)),
+                  volume: d[1],
+                };
+              }); 
+              console.log("history5 : ", history5)
+              let forecast5 = history5.map( d => {
+                let myDate = (new Date(d.date ).valueOf() + 60000);  // 1분 플러스
 
-              //   return {
-              //     date: parseTimeDate(myDate ),
-              //   }
-              // })
-              // console.log("forecast5 : ", forecast5)
+                return {
+                  date: parseTimeDate(myDate ),
+                }
+              })
+              console.log("forecast5 : ", forecast5)
 
-              // const historyIndex = history5.map((d, i) => [i, d.volume]);
-              // const forecastResult = forecast5.map((d, i) => {
-              //   console.log("in forecatt d: " + d.date + "/ i: ", i)
-              //   return {
-              //     // date: parseTimeDate(d.date),
-              //     date: d.date,
-              //     volume: predict(historyIndex, historyIndex.length - 1 + i),
-              //   }
-              // });
+              const historyIndex = history5.map((d, i) => [i, d.volume]);
+              const forecastResult = forecast5.map((d, i) => {
+                console.log("in forecatt d: " + d.date + "/ i: ", i)
+                return {
+                  // date: parseTimeDate(d.date),
+                  date: new Date(d.date),
+                  volume: predict(historyIndex, historyIndex.length - 1 + i),
+                }
+              });
 
-              // forecastResult.unshift(history5[history5.length - 1]);
+              forecastResult.unshift(history5[history5.length - 1]);
 
-              // const chart = d3.select('#chart');
-              //   const margin = { top: 20, right: 20, bottom: 30, left: 70 };
-              //   const width = 1000 - margin.left - margin.right;
-              //   const height = 500 - margin.top - margin.bottom;
-              //   const innerChart = chart.append('g')
-              //     .attr('transform', `translate(${margin.left} ${margin.top})`);
+              const chart = d3.select('#chart');
+                const margin = { top: 20, right: 20, bottom: 30, left: 70 };
+                const width = 1000 - margin.left - margin.right;
+                const height = 500 - margin.top - margin.bottom;
+                const innerChart = chart.append('g')
+                  .attr('transform', `translate(${margin.left} ${margin.top})`);
                 
-              //   const x = d3.scaleTime().rangeRound([0, width]);
-              //   const y = d3.scaleLinear().rangeRound([height, 0]);
+                const x = d3.scaleTime().rangeRound([0, width]);
+                const y = d3.scaleLinear().rangeRound([height, 0]);
                 
-              //   const line = d3.line()
-              //     .x(d => x(d.date ))
-              //     .y(d => y(d.volume));
+                const line = d3.line()
+                .x(d =>  !isNaN(d.date) ? x(d.date ) : 0)
+                .y(d =>  !isNaN(d.volume) ? y(d.volume ) : 0);
                 
-              //   x.domain([d3.min(history5 , (d,i,n) => d.date ), d3.max(forecastResult, (d,i,n) => d.date)]);
-              //   y.domain([0, d3.max(history5, d => d.volume)]);
+                x.domain([d3.min(history5 , (d,i,n) => d.date ), d3.max(forecastResult, (d,i,n) => d.date)]);
+                y.domain([0, d3.max(history5, d => d.volume)]);
                 
-              //   innerChart.append('g')
-              //     .attr('transform', `translate(0 ${height})`)
-              //     .call(d3.axisBottom(x));
+                innerChart.append('g')
+                  .attr('transform', `translate(0 ${height})`)
+                  .call(d3.axisBottom(x));
                 
-              //   innerChart.append('g')
-              //     .call(d3.axisLeft(y))
-              //     .append('text')
-              //     .attr('fill', '#000')
-              //     .attr('transform', 'rotate(-90)')
-              //     .attr('y', 6)
-              //     .attr('dy', '0.71em')
-              //     .attr('text-anchor', 'end')
-              //     .text('Avocados sold');
+                innerChart.append('g')
+                  .call(d3.axisLeft(y))
+                  .append('text')
+                  .attr('fill', '#000')
+                  .attr('transform', 'rotate(-90)')
+                  .attr('y', 6)
+                  .attr('dy', '0.71em')
+                  .attr('text-anchor', 'end')
+                  .text('Avocados sold');
                 
-              //   innerChart.append('path')
-              //     .datum(history5)
-              //     .attr('fill', 'none')
-              //     .attr('stroke', 'steelblue')
-              //     .attr('stroke-width', 1.5)
-              //     .attr('d', line);
+                innerChart.append('path')
+                  .datum(history5)
+                  .attr('fill', 'none')
+                  .attr('stroke', 'steelblue')
+                  .attr('stroke-width', 1.5)
+                  .attr('d', line);
                 
-              //   innerChart.append('path')
-              //     .datum(forecastResult)
-              //     .attr('fill', 'none')
-              //     .attr('stroke', 'tomato')
-              //     .attr('stroke-dasharray', '10,7')
-              //     .attr('stroke-width', 1.5)
-              //     .attr('d', line);
+                innerChart.append('path')
+                  .datum(forecastResult)
+                  .attr('fill', 'none')
+                  .attr('stroke', 'tomato')
+                  .attr('stroke-dasharray', '10,7')
+                  .attr('stroke-width', 1.5)
+                  .attr('d', line);
 
             }).catch( function (error) {
               console.log(error);
             })
-
+/*
               let history = [
                   { date: '2015-01-01', volume: 120453518 },
                   { date: '2015-02-01', volume: 137503440 },
@@ -221,15 +221,7 @@ export const MyD3Component = () => {
                 
                 const historyIndex = history2.map((d, i) => [i, d.volume]);
                 console.log("historyIndex : ", historyIndex)
-                // historyIndex form
-                // [
-                //   [0, 120453518],
-                //   [1, 137503440],
-                //   [2, 158757311],
-                //   [3, 130552492],
-                //   [4, 182752154],
-                //   /* Snip */
-                // ]
+
 
                 const forecast2 = forecast.map((d, i) => {
                   console.log("in forecatt d: " + d.date + "/ i: ", i)
@@ -287,6 +279,7 @@ export const MyD3Component = () => {
                   .attr('stroke-dasharray', '10,7')
                   .attr('stroke-width', 1.5)
                   .attr('d', line);
+                  */
           }
       },
 
