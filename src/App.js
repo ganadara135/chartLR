@@ -3,8 +3,9 @@ import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import axios from 'axios';
 // import './App.css';
-import { hot } from 'react-hot-loader';
-import BN from 'bn.js';
+// import { hot } from 'react-hot-loader';
+// import BN from 'bn.js';
+// import BigNumber from 'bignumber.js';
 
 
 export const MyD3Component = () => {
@@ -16,7 +17,7 @@ export const MyD3Component = () => {
 
   const predict = (data, newX) => {
       // console.log("predict data: ",data)
-      console.log("predict newX: ",newX)
+      // console.log("predict newX: ",newX)
       // 0.00 자리에서 반올림
       const round = (n) => Math.round(n * 100) / 100;
       
@@ -55,8 +56,6 @@ export const MyD3Component = () => {
   useEffect(
       () => {
           // if (props.data && d3Container.current) {
-      
-
           if (d3Container.current) {
             axios({
               method: 'get',
@@ -65,27 +64,94 @@ export const MyD3Component = () => {
                 u: 'admin',
                 p: 'admin',
                 db: 'emsdb',
-                q: "SELECT mean(\"meter0/ActivePower\") FROM data WHERE time >= now() - 1m GROUP BY time(10s)",
+                q: "SELECT median(\"meter0/ActivePower\") FROM data WHERE time >= now() - 2m GROUP BY time(10s)",
                 epoch: 'ms',
               }
             }).then( function(response){
               // console.log(response);
-              console.log("statement_id: ",response.data.results[0].statement_id)
-              console.log(response.data.results[0].series[0].values)
-              let myHistory = response.data.results[0].series[0].values;
-              const parseTime5 = d3.timeParse('%Y-%m-%d');
-              const history5 = myHistory.map((d) => {
-                var a = new BN(d[0])
-                // console.log(a.toPrecision(10))
-                console.log(a.toString(10,10))
-                // console.log(d[0].toPrecision())
-                // console.log(Number.parseInt(d[0]).toPrecision(10))
-                return {
-                  date: parseTime5(d[0].toPrecision(10)),
-                  volume: d[1],
-                };
-              }); 
-              console.log("history5 : ", history5)
+              // console.log("statement_id: ",response.data.results[0].statement_id)
+              // console.log(response.data.results[0].series[0].values)
+              // let myHistory = response.data.results[0].series[0].values;
+              // // const parseUTC = d3.utcParse('%Y-%m-%d');
+              // // Date parser
+              // var parseTimeDate = d3.timeFormat("%Y-%m-%d %H:%M:%S");
+              
+              // const history5 = myHistory.map((d) => {
+
+              //   let myDate = new Date(d[0]);
+
+              //   return {
+              //     date: parseTimeDate(myDate),
+              //     volume: d[1],
+              //   };
+              // }); 
+              // console.log("history5 : ", history5)
+              // let forecast5 = history5.map( d => {
+              //   let myDate = (new Date(d.date ).valueOf() + 60000);  // 1분 플러스
+
+              //   return {
+              //     date: parseTimeDate(myDate ),
+              //   }
+              // })
+              // console.log("forecast5 : ", forecast5)
+
+              // const historyIndex = history5.map((d, i) => [i, d.volume]);
+              // const forecastResult = forecast5.map((d, i) => {
+              //   console.log("in forecatt d: " + d.date + "/ i: ", i)
+              //   return {
+              //     // date: parseTimeDate(d.date),
+              //     date: d.date,
+              //     volume: predict(historyIndex, historyIndex.length - 1 + i),
+              //   }
+              // });
+
+              // forecastResult.unshift(history5[history5.length - 1]);
+
+              // const chart = d3.select('#chart');
+              //   const margin = { top: 20, right: 20, bottom: 30, left: 70 };
+              //   const width = 1000 - margin.left - margin.right;
+              //   const height = 500 - margin.top - margin.bottom;
+              //   const innerChart = chart.append('g')
+              //     .attr('transform', `translate(${margin.left} ${margin.top})`);
+                
+              //   const x = d3.scaleTime().rangeRound([0, width]);
+              //   const y = d3.scaleLinear().rangeRound([height, 0]);
+                
+              //   const line = d3.line()
+              //     .x(d => x(d.date ))
+              //     .y(d => y(d.volume));
+                
+              //   x.domain([d3.min(history5 , (d,i,n) => d.date ), d3.max(forecastResult, (d,i,n) => d.date)]);
+              //   y.domain([0, d3.max(history5, d => d.volume)]);
+                
+              //   innerChart.append('g')
+              //     .attr('transform', `translate(0 ${height})`)
+              //     .call(d3.axisBottom(x));
+                
+              //   innerChart.append('g')
+              //     .call(d3.axisLeft(y))
+              //     .append('text')
+              //     .attr('fill', '#000')
+              //     .attr('transform', 'rotate(-90)')
+              //     .attr('y', 6)
+              //     .attr('dy', '0.71em')
+              //     .attr('text-anchor', 'end')
+              //     .text('Avocados sold');
+                
+              //   innerChart.append('path')
+              //     .datum(history5)
+              //     .attr('fill', 'none')
+              //     .attr('stroke', 'steelblue')
+              //     .attr('stroke-width', 1.5)
+              //     .attr('d', line);
+                
+              //   innerChart.append('path')
+              //     .datum(forecastResult)
+              //     .attr('fill', 'none')
+              //     .attr('stroke', 'tomato')
+              //     .attr('stroke-dasharray', '10,7')
+              //     .attr('stroke-width', 1.5)
+              //     .attr('d', line);
 
             }).catch( function (error) {
               console.log(error);
@@ -154,7 +220,7 @@ export const MyD3Component = () => {
                 });                
                 
                 const historyIndex = history2.map((d, i) => [i, d.volume]);
-                // console.log("historyIndex : ", historyIndex)
+                console.log("historyIndex : ", historyIndex)
                 // historyIndex form
                 // [
                 //   [0, 120453518],
@@ -187,8 +253,8 @@ export const MyD3Component = () => {
                 const y = d3.scaleLinear().rangeRound([height, 0]);
                 
                 const line = d3.line()
-                  .x(d => x(d.date ))
-                  .y(d => y(d.volume));
+                  .x(d => console.log(d.date) || x(d.date ))
+                  .y(d => console.log(d.volume) || y(d.volume ));
                 
                 x.domain([d3.min(history2 , (d,i,n) => d.date ), d3.max(forecast2, (d,i,n) => d.date)]);
                 y.domain([0, d3.max(history2, d => d.volume)]);
@@ -248,4 +314,5 @@ function App() {
   );
 }
 
-export default hot(module)(App);
+export default App;
+// export default hot(module)(App);
