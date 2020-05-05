@@ -19,7 +19,8 @@ export const MyD3Component = () => {
       // console.log("predict data: ",data)
       // console.log("predict newX: ",newX)
       // 0.00 자리에서 반올림
-      const round = (n) => Math.round(n * 100) / 100;
+      const round = (n) => Math.round(n);
+      // const round = (n) => Math.round(n * 100) / 100;
       
       // The sum of all X values
       // The sum of all Y values
@@ -74,36 +75,64 @@ export const MyD3Component = () => {
               let myHistory = response.data.results[0].series[0].values;
              
               // Date parser
-              var parseTimeDate = d3.timeFormat("%Y-%m-%d %H:%M:%S");
+              // var parseTimeDate = d3.timeFormat("%Y-%m-%d %H:%M:%S");
+              
               
               const history5 = myHistory.map((d) => {
-
-                let myDate = new Date(d[0]);
-
+                // let myDate = new Date(d[0]);
                 return {
-                  date: new Date(parseTimeDate(myDate)),
+                  // date: new Date(parseTimeDate(myDate)),
+                  date: d[0],
                   volume: d[1],
                 };
               }); 
               console.log("history5 : ", history5)
+              console.log("history5.length : ", history5.length)
+              console.log("max Date or last Date of history5: ", history5[history5.length-1].date)
               let forecast5 = history5.map( d => {
-                let myDate = (new Date(d.date ).valueOf() + 60000);  // 1분 플러스
 
+                // let stDate = new Date(history5[history5.length-1].date)
+                let dyDate = new Date(d.date)
+                let plusTime = dyDate.valueOf() + 600000;  // 쿼리해 오는 시간 간격보다 충분히 길게 1분 앞 선다
                 return {
-                  date: parseTimeDate(myDate ),
+                  date: plusTime,
                 }
+                // let plusTime = null;
+                // if (stDate.getHours() !== dyDate.getHours()) {
+                //   plusTime += dyDate.getHours()*100000;
+                // }
+                // if (stDate.getMinutes() !== dyDate.getMinutes()) {
+                //   plusTime += dyDate.getMinutes()*10000;
+                // }
+                // // else if (stDate.getSeconds() !== dyDate.getSeconds()) {
+                //   plusTime += dyDate.getSeconds()*1000;
+                // // }
+                // let delta = stDate.valueOf() - dyDate.valueOf();
+                // let total = stDate.valueOf() + delta + 60000;
+        
+                // console.log( history5[history5.length-1].date + plusTime + 60000 )
+                // console.log(new Date(history5[history5.length-1].date + plusTime + 60000))
+                // return {
+                //   // date: parseTimeDate(myDate ),
+                //   date: history5[history5.length-1].date + plusTime + 60000,  //1분 더해줌
+                // }
               })
               console.log("forecast5 : ", forecast5)
 
               const historyIndex = history5.map((d, i) => [i, d.volume]);
               const forecastResult = forecast5.map((d, i) => {
-                console.log("in forecatt d: " + d.date + "/ i: ", i)
+                // console.log("in forecatt d: " + d.date + "/ i: ", i)
                 return {
                   // date: parseTimeDate(d.date),
                   date: new Date(d.date),
                   volume: predict(historyIndex, historyIndex.length - 1 + i),
                 }
               });
+
+              forecastResult.map(d => 
+                console.log("volume: ", d.volume, " time: ", d.date)
+              )
+              console.log("result : ", forecastResult.volume);
 
               forecastResult.unshift(history5[history5.length - 1]);
 
@@ -118,8 +147,8 @@ export const MyD3Component = () => {
                 const y = d3.scaleLinear().rangeRound([height, 0]);
                 
                 const line = d3.line()
-                .x(d =>  !isNaN(d.date) ? x(d.date ) : 0)
-                .y(d =>  !isNaN(d.volume) ? y(d.volume ) : 0);
+                .x(d =>  x(d.date ) )
+                .y(d =>  !isNaN(d.volume) ? y(d.volume ) : console.log("에러발생!!!!!!!"));
                 
                 x.domain([d3.min(history5 , (d,i,n) => d.date ), d3.max(forecastResult, (d,i,n) => d.date)]);
                 y.domain([0, d3.max(history5, d => d.volume)]);
@@ -136,7 +165,7 @@ export const MyD3Component = () => {
                   .attr('y', 6)
                   .attr('dy', '0.71em')
                   .attr('text-anchor', 'end')
-                  .text('Avocados sold');
+                  .text('측정 전력');
                 
                 innerChart.append('path')
                   .datum(history5)
@@ -150,7 +179,7 @@ export const MyD3Component = () => {
                   .attr('fill', 'none')
                   .attr('stroke', 'tomato')
                   .attr('stroke-dasharray', '10,7')
-                  .attr('stroke-width', 1.5)
+                  .attr('stroke-width', 3.5)
                   .attr('d', line);
 
             }).catch( function (error) {
